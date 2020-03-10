@@ -653,3 +653,10 @@ def test_buffer_size(fig_test, fig_ref):
     ax = fig_ref.add_subplot()
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["€", ""])
+
+def test_fontproperties_update(): 
+    plt.figure()
+    ylabel = plt.ylabel("ylabel", fontproperties='Tahoma', size=20)    
+    xlabel = plt.xlabel("xlabel", size=20, fontproperties='Tahoma')
+    assert ylabel.get_size() == 20
+    assert xlabel.get_size() == 20
