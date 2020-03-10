@@ -174,8 +174,12 @@ class Text(Artist):
 
     def update(self, kwargs):
         # docstring inherited
-        # Update bbox last, as it depends on font properties.
         sentinel = object()  # bbox can be None, so use another sentinel.
+        fontproperties = kwargs.pop("fontproperties", sentinel)
+        # Update fontproperties first, to lower its priority.
+        if fontproperties is not sentinel:
+            self.set_fontproperties(fontproperties)
+        # Update bbox last, as it depends on font properties.
         bbox = kwargs.pop("bbox", sentinel)
         super().update(kwargs)
         if bbox is not sentinel:
