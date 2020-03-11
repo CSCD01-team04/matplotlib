@@ -194,3 +194,18 @@ def test_nan_is_sorted():
 def test_step_markers(fig_test, fig_ref):
     fig_test.subplots().step([0, 1], "-o")
     fig_ref.subplots().plot([0, 0, 1], [0, 1, 1], "-o", markevery=[0, 2])
+
+
+@image_comparison(['vlines_hlines_colors.png'], remove_text=True)
+def test_vlines_hlines_colors():
+    fig = plt.figure()
+    with matplotlib.rc_context():
+        plt.hlines(0.5, 0, 1, colors=None)
+        plt.vlines(0.5, 0, 1)
+
+@image_comparison(['vlines_hlines_diff_colors.png'], remove_text=True)
+def test_vlines_hlines_diff_colors():
+    fig = plt.figure()
+    with matplotlib.rc_context({'lines.color':'red'}):
+        plt.hlines(0.5, 0, 1, colors='green')
+        plt.vlines(0.5, 0, 1)
