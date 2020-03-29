@@ -3141,6 +3141,58 @@ def test_errorbar():
     ax.errorbar("x", "y", xerr=0.2, yerr=0.4, data=data)
     ax.set_title("Simplest errorbars, 0.2 in x, 0.4 in y")
 
+def test_errorbar_nan():
+    f, ax = plt.subplots()
+    x = np.arange(3)
+    y = 2*x
+    eb = np.array([0.5] * 3)
+    eb[1]=np.nan
+
+    plotlines1, caplines1, barcols1 = ax.errorbar(x,y,yerr=eb,lolims=True,nan_repr="symbol")
+    assert len(caplines1[0].get_xdata())>1
+    assert caplines1[1].get_xdata()[0]==1
+    assert caplines1[1].get_ydata()[0]==2
+    assert caplines1[1].get_marker()==10
+
+    plotlines2, caplines2, barcols2 = ax.errorbar(x,y,yerr=eb,uplims=True,nan_repr="symbol")
+    assert len(caplines2[0].get_xdata())>1
+    assert caplines2[1].get_xdata()[0]==1
+    assert caplines2[1].get_ydata()[0]==2
+    assert caplines2[1].get_marker()==11
+
+    plotlines3, caplines3, barcols3 = ax.errorbar(x,y,yerr=eb,nan_repr="symbol")
+    assert caplines3[0].get_xdata()[0]==1
+    assert caplines3[0].get_ydata()[0]==2
+    assert caplines3[0].get_marker()==11
+    assert caplines3[1].get_xdata()[0]==1
+    assert caplines3[1].get_ydata()[0]==2
+    assert caplines3[1].get_marker()==10
+
+    plotlines4, caplines4, barcols4 = ax.errorbar(x,y,xerr=eb,xlolims=True,nan_repr="symbol")
+    assert len(caplines4[0].get_xdata())>1
+    assert caplines4[1].get_xdata()[0]==1
+    assert caplines4[1].get_ydata()[0]==2
+    assert caplines4[1].get_marker()==9
+
+    plotlines5, caplines5, barcols5 = ax.errorbar(x,y,xerr=eb,xuplims=True,nan_repr="symbol")
+    assert len(caplines5[0].get_xdata())>1
+    assert caplines5[1].get_xdata()[0]==1
+    assert caplines5[1].get_ydata()[0]==2
+    assert caplines5[1].get_marker()==8
+
+    plotlines6, caplines6, barcols6 = ax.errorbar(x,y,xerr=eb,nan_repr="symbol")
+    assert caplines6[0].get_xdata()[0]==1
+    assert caplines6[0].get_ydata()[0]==2
+    assert caplines6[0].get_marker()==9
+    assert caplines6[1].get_xdata()[0]==1
+    assert caplines6[1].get_ydata()[0]==2
+    assert caplines6[1].get_marker()==8
+
+    plotlines7, caplines7, barcols7 = ax.errorbar(x,y,yerr=eb)
+    plotlines8, caplines8, barcols8 = ax.errorbar(x,y,xerr=eb)
+    print(caplines7)
+    assert len(caplines7)==0 and len(caplines8)==0
+    
 
 def test_errorbar_colorcycle():
 
