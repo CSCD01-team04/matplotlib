@@ -3267,6 +3267,50 @@ def test_errorbar_inf_symbol():
     assert len(caplines7)==0
     assert len(caplines8)==0
     
+def test_errorbar_inf_bar():
+    f, ax = plt.subplots()
+    x = np.arange(3)
+    y = 2*x # Plot exponential function
+    eb = np.array([0.5] * 3)
+    eb[1]=np.inf # Errorbar at position 1 is inf
+
+    # Cases for y errorbar, bar representation of inf
+    # Check if lolims is True, then inf bar is plotted only above the data point
+    plotlines1, caplines1, barcols1 = ax.errorbar(x,y,yerr=eb,lolims=True,inf_repr="bar")
+    assert np.all(barcols1[1].get_segments()[0]==[[1.,2.],[1,4.]])
+        
+
+    # Check if uplims is True, then inf bar is plotted only below the data point
+    plotlines2, caplines2, barcols2 = ax.errorbar(x,y,yerr=eb,uplims=True,inf_repr="bar")
+    assert np.all(barcols2[1].get_segments()[0]==[[1.,2.],[1.,0.]])
+
+    # Check if neither uplims nor lolims is specified, then inf bar is plotted 
+    # both above and below the data point
+    plotlines3, caplines3, barcols3 = ax.errorbar(x,y,yerr=eb,inf_repr="bar")
+    assert np.all(barcols3[1].get_segments()[0]==[[1.,2.],[1.,0.]])
+    assert np.all(barcols3[2].get_segments()[0]==[[1.,2.],[1,4.]])
+
+    # Cases for x errorbar, bar representation of inf
+    # Check if xlolims is True, then the inf symbol is plotted only to the right of the data point
+    plotlines4, caplines4, barcols4 = ax.errorbar(x,y,xerr=eb,xlolims=True,inf_repr="bar")
+    assert np.all(barcols4[1].get_segments()[0]==[[1.,2.],[2.,2.]])
+
+    # Check if xuplims is True, then the inf bar is plotted only to the left of the data point
+    plotlines5, caplines5, barcols5 = ax.errorbar(x,y,xerr=eb,xuplims=True,inf_repr="bar")
+    assert np.all(barcols5[1].get_segments()[0]==[[1.,2.],[0.,2.]])
+
+    # Check if neither xuplims nor xlolims is specified, then the inf bar is plotted
+    # both to the left and right of the data point
+    plotlines6, caplines6, barcols6 = ax.errorbar(x,y,xerr=eb,inf_repr="bar")
+    assert np.all(barcols6[1].get_segments()[0]==[[1.,2.],[0.,2.]])
+    assert np.all(barcols6[2].get_segments()[0]==[[1.,2.],[2.,2.]])
+
+    # Cases of default representation of inf, should display empty errorbar
+    plotlines7, caplines7, barcols7 = ax.errorbar(x,y,yerr=eb)
+    plotlines8, caplines8, barcols8 = ax.errorbar(x,y,xerr=eb)
+    assert len(barcols7)==1
+    assert len(barcols8)==1
+
 
 def test_errorbar_colorcycle():
 
