@@ -3144,7 +3144,7 @@ def test_errorbar():
 def test_errorbar_nan():
     f, ax = plt.subplots()
     x = np.arange(3)
-    y = 2*x # Plot exponential function
+    y = 2*x # Plot a linear function
     eb = np.array([0.5] * 3) 
     eb[1]=np.nan # Errorbar at position 1 is nan
 
@@ -3207,7 +3207,7 @@ def test_errorbar_nan():
 def test_errorbar_inf_symbol():
     f, ax = plt.subplots()
     x = np.arange(3)
-    y = 2*x # Plot exponential function
+    y = 2*x # Plot a linear function
     eb = np.array([0.5] * 3)
     eb[1]=np.inf # Errorbar at position 1 is inf
 
