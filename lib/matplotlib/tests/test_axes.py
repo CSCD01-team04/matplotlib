@@ -3201,8 +3201,8 @@ def test_errorbar_nan():
     # Cases of default representation of nan, should display empty errorbar
     plotlines7, caplines7, barcols7 = ax.errorbar(x,y,yerr=eb)
     plotlines8, caplines8, barcols8 = ax.errorbar(x,y,xerr=eb)
-    print(caplines7)
-    assert len(caplines7)==0 and len(caplines8)==0
+    assert len(caplines7)==0
+    assert len(caplines8)==0
 
 def test_errorbar_inf_symbol():
     f, ax = plt.subplots()
