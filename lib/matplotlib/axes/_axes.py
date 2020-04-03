@@ -3152,6 +3152,21 @@ class Axes(_AxesBase):
             Used to avoid overlapping error bars when two series share x-axis
             values.
 
+        nan_repr : string, default: None
+            Specify the representation of a nan errorbar. There are 2 possible
+            representations: 
+
+            - None: no errorbar.
+            - 'symbol': a nan symbol (caret).
+        
+        inf_repr : string, default: None
+            Specify the representation of an inf errorbar. There are 3 possible
+            representations:
+
+            - None: no errorbar.
+            - 'symbol': an inf symbol (tick).
+            - 'bar': an errorbar extending to the axes frame.
+
         Returns
         -------
         container : `.ErrorbarContainer`
@@ -3365,7 +3380,7 @@ class Axes(_AxesBase):
             lim_vals : lower, upper, left, or right
                 Where the errorbar is placed.
             
-            x_or_y : {'x', 'y'}
+            x_or_y : 'x', or 'y'
                 'x' if this is an errorbar in the x-direction: left or right.
                 'y' if this is an errorbar in the y-direction: upper or lower.
                         
@@ -3389,27 +3404,56 @@ class Axes(_AxesBase):
                             barcols.append(self.vlines([x[i]],[y[i]], bar_end, **eb_lines_style))
                     elif inf_repr=="symbol":
                         caplines.append(mlines.Line2D([x[i]], [y[i]], marker=inf_marker, **eb_cap_style))
-                
-        def get_extent(dir):
+
+        def get_extent_err(dir, err):
+            """
+            Private function used by get_extent, for getting the upper or lower 
+            limit of the errorbar.
+            """
+            try: 
+                a, b = err
+                iter(a)
+                iter(b)
+            except (TypeError, ValueError):
+                a = b = err 
+            
+            ac = np.array(a)
+            bc = np.array(b)
+            if dir == 'min':
+                return np.nanmin(ac[ac != -np.inf])
+            elif dir == 'max':
+                return np.nanmax(bc[bc != np.inf])
+
+        def get_extent(x_or_y, dir):
             """
             Private function for getting the upper and lower y-limit, or x-limit
-            of the data *x* or *y*.
+            of the data *x* or *y*. The maximum numerical error is added to 
+            this value.
 
             Parameters
             ----------
-            dir : 'xmin', 'xmax', 'ymin', or 'ymax'
-                The absolute max/min data from either *x* or *y*
+            dir : 'min', or 'max'
+                The absolute max/min data from either *x* or *y*.
+
+            x_or_y: 'x' or 'y'
+                The data points used.
             """
-            xc = np.array(x)
-            yc = np.array(y)
-            if dir == 'xmin':
-                return np.nanmin(xc[xc != -np.inf])
-            elif dir == 'xmax':
-                return np.nanmax(xc[xc != np.inf])
-            elif dir == 'ymin':
-                return np.nanmin(yc[yc != -np.inf])
+            if x_or_y == 'x':
+                arr = np.array(x)
+                err = xerr
             else:
-                return np.nanmax(yc[yc != np.inf])
+                arr = np.array(y)
+                err = yerr
+
+            if len(arr) == 0:
+                arr = np.array([0])
+            if len(err) == 0:
+                err = np.array([0])
+
+            if dir == 'min':
+                return np.nanmin(arr[arr != -np.inf]) - get_extent_err('min', err)
+            elif dir == 'max':
+                return np.nanmax(arr[arr != np.inf]) + get_extent_err('max', err)
               
         if xerr is not None:
             left, right = extract_err(xerr, x)
@@ -3420,8 +3464,8 @@ class Axes(_AxesBase):
                 yo, _ = xywhere(y, right, noxlims & everymask)
                 lo, ro = xywhere(left, right, noxlims & everymask)
                 barcols.append(self.hlines(yo, lo, ro, **eb_lines_style))
-                nan_inf_lims(right, 'x', get_extent('xmin'), mlines.CARETRIGHTBASE, mlines.TICKRIGHT)
-                nan_inf_lims(left, 'x', get_extent('xmax'), mlines.CARETLEFTBASE, mlines.TICKLEFT)
+                nan_inf_lims(right, 'x', get_extent('x', 'min'), mlines.CARETRIGHTBASE, mlines.TICKRIGHT)
+                nan_inf_lims(left, 'x', get_extent('x', 'max'), mlines.CARETLEFTBASE, mlines.TICKLEFT)
                 if capsize > 0:
                     caplines.append(mlines.Line2D(lo, yo, marker='|',
                                                   **eb_cap_style))
@@ -3442,7 +3486,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(rightup, yup, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(left, 'x', get_extent('xmax'), marker, inf_marker)
+                nan_inf_lims(left, 'x', get_extent('x', 'max'), marker, inf_marker)
                 if capsize > 0:
                     xlo, ylo = xywhere(x, y, xlolims & everymask)
                     caplines.append(mlines.Line2D(xlo, ylo, marker='|',
@@ -3455,14 +3499,14 @@ class Axes(_AxesBase):
                 leftlo, ylo = xywhere(left, y, xuplims & everymask)
                 if self.xaxis_inverted():
                     marker = mlines.CARETRIGHTBASE
-                    inf_marker=mlines.TICKRIGHT
+                    inf_marker = mlines.TICKRIGHT
                 else:
                     marker = mlines.CARETLEFTBASE
-                    inf_marker=mlines.TICKLEFT
+                    inf_marker = mlines.TICKLEFT
                 caplines.append(
                     mlines.Line2D(leftlo, ylo, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(right, 'x', get_extent('xmin'), marker, inf_marker)
+                nan_inf_lims(right, 'x', get_extent('x', 'min'), marker, inf_marker)
                 if capsize > 0:
                     xup, yup = xywhere(x, y, xuplims & everymask)
                     caplines.append(mlines.Line2D(xup, yup, marker='|',
@@ -3477,8 +3521,8 @@ class Axes(_AxesBase):
                 xo, _ = xywhere(x, lower, noylims & everymask)
                 lo, uo = xywhere(lower, upper, noylims & everymask)
                 barcols.append(self.vlines(xo, lo, uo, **eb_lines_style))
-                nan_inf_lims(lower, 'y', get_extent('ymin'), mlines.CARETDOWNBASE, mlines.TICKDOWN)
-                nan_inf_lims(upper, 'y', get_extent('ymax'), mlines.CARETUPBASE, mlines.TICKUP)
+                nan_inf_lims(lower, 'y', get_extent('y', 'min'), mlines.CARETDOWNBASE, mlines.TICKDOWN)
+                nan_inf_lims(upper, 'y', get_extent('y', 'max'), mlines.CARETUPBASE, mlines.TICKUP)
                 if capsize > 0:
                     caplines.append(mlines.Line2D(xo, lo, marker='_',
                                                   **eb_cap_style))
@@ -3499,7 +3543,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(xup, upperup, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(upper, 'y', get_extent('ymax'), marker, inf_marker)
+                nan_inf_lims(upper, 'y', get_extent('y', 'max'), marker, inf_marker)
                 if capsize > 0:
                     xlo, ylo = xywhere(x, y, lolims & everymask)
                     caplines.append(mlines.Line2D(xlo, ylo, marker='_',
@@ -3519,7 +3563,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(xlo, lowerlo, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(lower, 'y', get_extent('ymin'), marker, inf_marker)
+                nan_inf_lims(lower, 'y', get_extent('y', 'min'), marker, inf_marker)
                 if capsize > 0:
                     xup, yup = xywhere(x, y, uplims & everymask)
                     caplines.append(mlines.Line2D(xup, yup, marker='_',
