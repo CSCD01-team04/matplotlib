@@ -3354,18 +3354,63 @@ class Axes(_AxesBase):
             high = [v + e for v, e in zip(data, b)]
             return low, high
         
-        def nan_inf_lims(lim_vals,x_or_y,x,y,bar_end,caplines,barcols,nan_marker=None,inf_marker=None,inf_repr=None,nan_repr=None):
+        def nan_inf_lims(lim_vals, x_or_y, bar_end, nan_marker=None, inf_marker=None):
+            """
+            Private function for appending a special *nan_marker*, *inf_marker* or 
+            *inf_bar* in the appropriate orientation and position to the data point 
+            *(x,y)*. 
+
+            Parameters
+            ----------
+            lim_vals : lower, upper, left, or right
+                Where the errorbar is placed.
+            
+            x_or_y : {'x', 'y'}
+                'x' if this is an errorbar in the x-direction: left or right.
+                'y' if this is an errorbar in the y-direction: upper or lower.
+                        
+            bar_end : integer
+                The end position of the errorbar when inf_repr = 'bar' is used.
+            
+            nan_marker : string marker
+                The marker when nan_repr = 'symbol' is used.
+            
+            inf_marker : string marker 
+                The marker when inf_repr = 'symbol' is used.
+            """
             for i in range(0,len(lim_vals)):
                 if (nan_repr and np.isnan(lim_vals[i])):
                     caplines.append(mlines.Line2D([x[i]], [y[i]], marker=nan_marker, **eb_cap_style))
                 if (inf_repr and np.isinf(lim_vals[i])):
                     if inf_repr=="bar":
                         if x_or_y=='x':
-                            barcols.append(self.hlines([y[i]],[x[i]],bar_end, **eb_lines_style))
+                            barcols.append(self.hlines([y[i]],[x[i]], bar_end, **eb_lines_style))
                         elif x_or_y=='y':
-                            barcols.append(self.vlines([x[i]],[y[i]],bar_end, **eb_lines_style))
+                            barcols.append(self.vlines([x[i]],[y[i]], bar_end, **eb_lines_style))
                     elif inf_repr=="symbol":
                         caplines.append(mlines.Line2D([x[i]], [y[i]], marker=inf_marker, **eb_cap_style))
+                
+        def get_extent(dir):
+            """
+            Private function for getting the upper and lower y-limit, or x-limit
+            of the data *x* or *y*.
+
+            Parameters
+            ----------
+            dir : 'xmin', 'xmax', 'ymin', or 'ymax'
+                The absolute max/min data from either *x* or *y*
+            """
+            xc = np.array(x)
+            yc = np.array(y)
+            if dir == 'xmin':
+                return np.nanmin(xc[xc != -np.inf])
+            elif dir == 'xmax':
+                return np.nanmax(xc[xc != np.inf])
+            elif dir == 'ymin':
+                return np.nanmin(yc[yc != -np.inf])
+            else:
+                return np.nanmax(yc[yc != np.inf])
+              
         if xerr is not None:
             left, right = extract_err(xerr, x)
             # select points without upper/lower limits in x and
@@ -3375,8 +3420,8 @@ class Axes(_AxesBase):
                 yo, _ = xywhere(y, right, noxlims & everymask)
                 lo, ro = xywhere(left, right, noxlims & everymask)
                 barcols.append(self.hlines(yo, lo, ro, **eb_lines_style))
-                nan_inf_lims(right,'x',x,y,[x[np.isfinite(x)].min()],caplines,barcols,mlines.CARETRIGHTBASE,mlines.TICKRIGHT,inf_repr,nan_repr)
-                nan_inf_lims(left,'x',x,y,[x[np.isfinite(x)].max()],caplines,barcols,mlines.CARETLEFTBASE,mlines.TICKLEFT,inf_repr,nan_repr)
+                nan_inf_lims(right, 'x', get_extent('xmin'), mlines.CARETRIGHTBASE, mlines.TICKRIGHT)
+                nan_inf_lims(left, 'x', get_extent('xmax'), mlines.CARETLEFTBASE, mlines.TICKLEFT)
                 if capsize > 0:
                     caplines.append(mlines.Line2D(lo, yo, marker='|',
                                                   **eb_cap_style))
@@ -3397,7 +3442,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(rightup, yup, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(left,'x',x,y,[x[np.isfinite(x)].max()],caplines,barcols,marker,inf_marker,inf_repr,nan_repr)
+                nan_inf_lims(left, 'x', get_extent('xmax'), marker, inf_marker)
                 if capsize > 0:
                     xlo, ylo = xywhere(x, y, xlolims & everymask)
                     caplines.append(mlines.Line2D(xlo, ylo, marker='|',
@@ -3417,7 +3462,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(leftlo, ylo, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(right,'x',x,y,[x[np.isfinite(x)].min()],caplines,barcols,marker,inf_marker,inf_repr,nan_repr)
+                nan_inf_lims(right, 'x', get_extent('xmin'), marker, inf_marker)
                 if capsize > 0:
                     xup, yup = xywhere(x, y, xuplims & everymask)
                     caplines.append(mlines.Line2D(xup, yup, marker='|',
@@ -3432,8 +3477,8 @@ class Axes(_AxesBase):
                 xo, _ = xywhere(x, lower, noylims & everymask)
                 lo, uo = xywhere(lower, upper, noylims & everymask)
                 barcols.append(self.vlines(xo, lo, uo, **eb_lines_style))
-                nan_inf_lims(lower,'y',x,y,[y[np.isfinite(y)].min()],caplines,barcols,mlines.CARETDOWNBASE,mlines.TICKDOWN,inf_repr,nan_repr)
-                nan_inf_lims(upper,'y',x,y,[y[np.isfinite(y)].max()],caplines,barcols,mlines.CARETUPBASE,mlines.TICKUP,inf_repr,nan_repr)
+                nan_inf_lims(lower, 'y', get_extent('ymin'), mlines.CARETDOWNBASE, mlines.TICKDOWN)
+                nan_inf_lims(upper, 'y', get_extent('ymax'), mlines.CARETUPBASE, mlines.TICKUP)
                 if capsize > 0:
                     caplines.append(mlines.Line2D(xo, lo, marker='_',
                                                   **eb_cap_style))
@@ -3454,7 +3499,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(xup, upperup, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(upper,'y',x,y,[y[np.isfinite(y)].max()],caplines,barcols,marker,inf_marker,inf_repr,nan_repr)
+                nan_inf_lims(upper, 'y', get_extent('ymax'), marker, inf_marker)
                 if capsize > 0:
                     xlo, ylo = xywhere(x, y, lolims & everymask)
                     caplines.append(mlines.Line2D(xlo, ylo, marker='_',
@@ -3474,7 +3519,7 @@ class Axes(_AxesBase):
                 caplines.append(
                     mlines.Line2D(xlo, lowerlo, ls='None', marker=marker,
                                   **eb_cap_style))
-                nan_inf_lims(lower,'y',x,y,[y[np.isfinite(y)].min()],caplines,barcols,marker,inf_marker,inf_repr,nan_repr)
+                nan_inf_lims(lower, 'y', get_extent('ymin'), marker, inf_marker)
                 if capsize > 0:
                     xup, yup = xywhere(x, y, uplims & everymask)
                     caplines.append(mlines.Line2D(xup, yup, marker='_',
