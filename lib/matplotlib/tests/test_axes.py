@@ -3202,8 +3202,6 @@ def test_errorbar_nan():
     # Cases of default representation of nan, should display empty errorbar
     plotlines7, caplines7, barcols7 = ax.errorbar(x, y, yerr=eb)
     plotlines8, caplines8, barcols8 = ax.errorbar(x, y, xerr=eb)
-    print(caplines7[1].get_xdata(), caplines7[1].get_ydata())
-    print(caplines8[1].get_xdata(), caplines8[1].get_ydata())
     assert np.isnan(caplines7[1].get_ydata()[1])
     assert np.isnan(caplines8[1].get_xdata()[1])
 
