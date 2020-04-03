@@ -3177,27 +3177,27 @@ def test_errorbar_nan():
     # Cases for x errorbar, symbol representation of nan
     # Check if xlolims is True, then the nan symbol is plotted only to the right of the data point
     plotlines4, caplines4, barcols4 = ax.errorbar(x, y, xerr=eb, xlolims=True, nan_repr="symbol")
-    assert len(caplines4[0].get_xdata())>1
-    assert caplines4[1].get_xdata()[0]==1
-    assert caplines4[1].get_ydata()[0]==2
-    assert caplines4[1].get_marker()==9
+    assert len(caplines4[0].get_xdata()) > 1
+    assert caplines4[1].get_xdata()[0] == 1
+    assert caplines4[1].get_ydata()[0] == 2
+    assert caplines4[1].get_marker() == 9
 
     # Check if xuplims is True, then the nan symbol is plotted only to the left of the data point
     plotlines5, caplines5, barcols5 = ax.errorbar(x, y, xerr=eb, xuplims=True, nan_repr="symbol")
-    assert len(caplines5[0].get_xdata())>1
-    assert caplines5[1].get_xdata()[0]==1
-    assert caplines5[1].get_ydata()[0]==2
-    assert caplines5[1].get_marker()==8
+    assert len(caplines5[0].get_xdata()) > 1
+    assert caplines5[1].get_xdata()[0] == 1
+    assert caplines5[1].get_ydata()[0] == 2
+    assert caplines5[1].get_marker() == 8
 
     # Check if neither xuplims nor xlolims is specified, then the nan symbol is plotted
     # both to the left and right of the data point
     plotlines6, caplines6, barcols6 = ax.errorbar(x, y, xerr=eb, nan_repr="symbol")
-    assert caplines6[0].get_xdata()[0]==1
-    assert caplines6[0].get_ydata()[0]==2
-    assert caplines6[0].get_marker()==9
-    assert caplines6[1].get_xdata()[0]==1
-    assert caplines6[1].get_ydata()[0]==2
-    assert caplines6[1].get_marker()==8
+    assert caplines6[0].get_xdata()[0] == 1
+    assert caplines6[0].get_ydata()[0] == 2
+    assert caplines6[0].get_marker() == 9
+    assert caplines6[1].get_xdata()[0] == 1
+    assert caplines6[1].get_ydata()[0] == 2
+    assert caplines6[1].get_marker() == 8
 
     # Cases of default representation of nan, should display empty errorbar
     plotlines7, caplines7, barcols7 = ax.errorbar(x, y, yerr=eb)
@@ -3213,7 +3213,7 @@ def test_errorbar_inf_symbol():
     x = np.arange(3)
     y = 2*x # Plot a linear function
     eb = np.array([0.5] * 3)
-    eb[1]=np.inf # Errorbar at position 1 is inf
+    eb[1] = np.inf # Errorbar at position 1 is inf
 
     # Cases for y errorbar, symbol representation of inf
     # Check if lolims is True, then inf symbol is plotted only above the data point
@@ -3277,7 +3277,7 @@ def test_errorbar_inf_bar():
     x = np.arange(3)
     y = 2*x # Plot a linear function
     eb = np.array([0.5] * 3)
-    eb[1]=np.inf # Errorbar at position 1 is inf
+    eb[1] = np.inf # Errorbar at position 1 is inf
 
     # Cases for y errorbar, bar representation of inf
     # Check if lolims is True, then inf bar is plotted only above the data point
@@ -3306,8 +3306,8 @@ def test_errorbar_inf_bar():
     # Check if neither xuplims nor xlolims is specified, then the inf bar is plotted
     # both to the left and right of the data point
     plotlines6, caplines6, barcols6 = ax.errorbar(x, y, xerr=eb, inf_repr="bar")
-    assert np.all(barcols6[1].get_segments()[0]==[[1., 2.],[-0.5, 2.]])
-    assert np.all(barcols6[2].get_segments()[0]==[[1., 2.],[2.5, 2.]])
+    assert np.all(barcols6[1].get_segments()[0] == [[1., 2.],[-0.5, 2.]])
+    assert np.all(barcols6[2].get_segments()[0] == [[1., 2.],[2.5, 2.]])
 
     # Cases of default representation of inf, should display empty errorbar
     plotlines7, caplines7, barcols7 = ax.errorbar(x, y, yerr=eb)
