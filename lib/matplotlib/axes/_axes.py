@@ -3386,15 +3386,15 @@ class Axes(_AxesBase):
                 'y' if this is an errorbar in the y-direction: upper or lower.
                         
             bar_end : integer
-                The end position of the errorbar when inf_repr = 'bar' is used.
+                The end position of the errorbar when inf_repr='bar' is used.
             
             nan_marker : string marker
-                The marker when nan_repr = 'symbol' is used.
+                The marker when nan_repr='symbol' is used.
             
             inf_marker : string marker 
-                The marker when inf_repr = 'symbol' is used.
+                The marker when inf_repr='symbol' is used.
             """
-            for i in range(0,len(lim_vals)):
+            for i in range(0, len(lim_vals)):
                 if (nan_repr and np.isnan(lim_vals[i])):
                     caplines.append(mlines.Line2D([x[i]], [y[i]], 
                                     marker=nan_marker, **eb_cap_style))
